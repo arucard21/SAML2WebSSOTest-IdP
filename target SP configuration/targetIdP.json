@@ -1,0 +1,7 @@
+{
+	idpInitURL: "<url>",
+	metadata: "<string>",
+	preResponseInteractions: [
+		{ interactionType: "<form/link/element>", lookupAttribute: "<id/name/href/text>", lookupValue: "<value>" }
+	]
+}

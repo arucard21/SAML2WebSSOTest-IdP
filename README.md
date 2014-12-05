@@ -12,16 +12,16 @@ SAML2WebSSOTest-IdP provides a framework for the automated testing of SAML 2.0 I
 
 ## Usage:
 
-1. Retrieve the mock SP metadata by running SAML2WebSSOTest-IdP with the parameters ```-t/--testsuite``` and ```-m/--metadata```, e.g ```java -jar SAML2WebSSOTest-IdP -t SAML2Int" -m``` when running from JAR or ```SAML2WebSSOTest.IdP.IdPTestRunner -t SAML2Int -m``` when running in an IDE. This will retrieve the metadata for the test suite you specified with ```-t/--testsuite```
+1. Retrieve the mock SP metadata by running SAML2WebSSOTest-IdP with the parameters ```-T/--testsuite``` and ```-m/--metadata```, e.g ```java -jar SAML2WebSSOTest-IdP -T SAML2Int" -m``` when running from JAR or ```SAML2WebSSOTest.IdP.IdPTestRunner -T SAML2Int -m``` when running in an IDE. This will retrieve the metadata for the test suite you specified with ```-t/--testsuite```
 2. Configure your IdP to use the mock SP's metadata
 3. Copy the ```targetIdP.json``` file and fill in the necessary options. This is described in the Configuration section below
 4. Optionally copy the ```slf4j.properties``` file as well to specify the logging configuration
-5. Run the test cases in a test suite with the parameters ```-t/--testsuite```, ```-i/--idpconfig``` and ```-c/--testcase```, e.g. ```java -jar SAML2WebSSOTest-IdP -t SAML2Int -i /path/to/targetIdP.properties -c MetadataAvailable``` when running from JAR or ```SAML2WebSSOTest.IdP.IdPTestRunner -t SAML2Int -i /path/to/targetIdP.properties -c MetadataAvailable``` when running in an IDE. You can also run this without the ```-c/--testcase``` parameter, this will cause the test to run all test cases in the test suite.
+5. Run the test cases in a test suite with the parameters ```-T/--testsuite```, ```-c/--idpconfig``` and ```-t/--testcase```, e.g. ```java -jar SAML2WebSSOTest-IdP -T SAML2Int -c /path/to/targetIdP.properties -t MetadataAvailable``` when running from JAR or ```SAML2WebSSOTest.IdP.IdPTestRunner -T SAML2Int -c /path/to/targetIdP.properties -t MetadataAvailable``` when running in an IDE. You can also run this without the ```-t/--testcase``` parameter, this will cause the test to run all test cases in the test suite.
 
 Some additional useful commands are:
 - ```SAML2WebSSOTest.IdP.IdPTestRunner -h``` : Show the help message, containing an overview of all available parameters.
 - ```SAML2WebSSOTest.IdP.IdPTestRunner -L``` : Show a list of all available test suites 
-- ```SAML2WebSSOTest.IdP.IdPTestRunner -t <test suite> -l``` : Show a list of all available test cases in the given test suite
+- ```SAML2WebSSOTest.IdP.IdPTestRunner -T <test suite> -l``` : Show a list of all available test cases in the given test suite
 
 ## Configuration:
 
@@ -72,3 +72,4 @@ They should be used as follows:
 - `ERROR`: This status level is used when a test failed and its failure indicates non-compliance with the specification.
 
 The values `UNKNOWN` and `CRITICAL` should not be used in the test cases. UNKNOWN is a fallback status, which should never be used, and CRITICAL is used to show that the test itself failed, whenever possible (exceptions can and most likely will still be thrown) 
+ 
