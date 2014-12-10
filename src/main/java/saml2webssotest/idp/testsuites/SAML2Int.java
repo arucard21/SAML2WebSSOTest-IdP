@@ -36,7 +36,7 @@ import saml2webssotest.idp.IdPTestRunner;
 
 // TODO: rewrite for IdP
 
-public class SAML2Int extends TestSuite {
+public class SAML2Int extends IdPTestSuite {
 	/**
 	 * Logger for this class
 	 */
@@ -57,7 +57,7 @@ public class SAML2Int extends TestSuite {
 	}
 
 	@Override
-	public String getIdPMetadata() {
+	public String getMockedMetadata() {
 		try {
 			DefaultBootstrap.bootstrap();
 		} catch (ConfigurationException e) {

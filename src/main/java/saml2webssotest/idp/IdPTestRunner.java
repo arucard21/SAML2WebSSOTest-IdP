@@ -10,8 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
-
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -36,15 +34,18 @@ import com.google.gson.JsonSyntaxException;
 
 import saml2webssotest.common.Interaction;
 import saml2webssotest.common.FormInteraction;
+import saml2webssotest.common.InteractionDeserializer;
 import saml2webssotest.common.LinkInteraction;
+import saml2webssotest.common.MetadataDeserializer;
 import saml2webssotest.common.TestResult;
+import saml2webssotest.common.TestRunnerUtil;
 import saml2webssotest.common.TestStatus;
+import saml2webssotest.common.TestSuite.TestCase;
+import saml2webssotest.common.TestSuite.MetadataTestCase;
 import saml2webssotest.idp.mockSPHandlers.SamlWebSSOHandler;
-import saml2webssotest.idp.testsuites.TestSuite;
-import saml2webssotest.idp.testsuites.TestSuite.ConfigTestCase;
-import saml2webssotest.idp.testsuites.TestSuite.MetadataTestCase;
-import saml2webssotest.idp.testsuites.TestSuite.ResponseTestCase;
-import saml2webssotest.idp.testsuites.TestSuite.TestCase;
+import saml2webssotest.idp.testsuites.IdPTestSuite;
+import saml2webssotest.idp.testsuites.IdPTestSuite.ConfigTestCase;
+import saml2webssotest.idp.testsuites.IdPTestSuite.ResponseTestCase;
 
 /**
  * TODO: rewrite for IdP
@@ -68,7 +69,7 @@ public class IdPTestRunner {
 	/**
 	 * The test suite that is being run
 	 */
-	private static TestSuite testsuite;
+	private static IdPTestSuite testsuite;
 	/**
 	 * Contains the SP configuration
 	 */
@@ -131,7 +132,7 @@ public class IdPTestRunner {
 
 			// list the test suites, if necessary
 			if (command.hasOption("listTestsuites")) {
-				listTestSuites();
+				TestRunnerUtil.listTestSuites(IdPTestRunner.class.getPackage().getName() + "." + testSuitesPackage);
 				System.exit(0);
 			}
 
@@ -140,25 +141,25 @@ public class IdPTestRunner {
 				String ts_string = command.getOptionValue("testsuite");
 				Class<?> ts_class = Class.forName(IdPTestRunner.class.getPackage().getName() +"."+ testSuitesPackage +"."+ ts_string);
 				Object testsuiteObj = ts_class.newInstance();
-				if (testsuiteObj instanceof TestSuite) {
-					testsuite = (TestSuite) testsuiteObj;
+				if (testsuiteObj instanceof IdPTestSuite) {
+					testsuite = (IdPTestSuite) testsuiteObj;
 
 					// list the test cases, if necessary
 					if (command.hasOption("listTestcases")) {
-						listTestCases();
+						TestRunnerUtil.listTestCases(testsuite);
 						System.exit(0);
 					}
 
 					// show mock IdP metadata
 					if (command.hasOption("metadata")) {
-						outputIdPMetadata(testsuite);
+						TestRunnerUtil.outputMockedMetadata(testsuite);
 						System.exit(0);
 					}
 
 					// load target SP config
 					if (command.hasOption("idpconfig")) {
 						idpConfig = new GsonBuilder()
-											.registerTypeAdapter(Document.class, new DocumentDeserializer())
+											.registerTypeAdapter(Document.class, new MetadataDeserializer())
 											.registerTypeAdapter(Interaction.class, new InteractionDeserializer())
 											.create()
 											.fromJson(Files.newBufferedReader(Paths.get(command.getOptionValue("idpconfig")),Charset.defaultCharset()), IdPConfiguration.class); 
@@ -231,7 +232,7 @@ public class IdPTestRunner {
 							testresults.add(result);
 						}
 					}
-					outputTestResults(testresults);
+					TestRunnerUtil.outputTestResults(testresults);
 				} else {
 					logger.error("Provided class was not a TestSuite");
 				}
@@ -275,76 +276,6 @@ public class IdPTestRunner {
 				logger.error("The mock SP could not be stopped", e);
 			}
 		}
-	}
-
-	/**
-	 * Display the list of test suites
-	 * 
-	 * When new test suites are created, they need to be added here manually to
-	 * be listed though they can be used without being listed. (Doing this
-	 * dynamically is not stable enough with Java Reflection)
-	 */
-	private static void listTestSuites() {
-		
-		// TODO: use Reflections to dynamically retrieve the test suites, maybe use it elsewhere as well
-		
-		// create a list of all available test suites
-		ArrayList<String> availableTestSuites = new ArrayList<String>();
-		availableTestSuites.add("SAML2Int");
-		// availableTestSuites.add("YOURNEWTESTSUITE");
-
-		// output the available test suites
-		for (String ts : availableTestSuites) {
-			System.out.println(ts);
-		}
-	}
-
-	/**
-	 * Display the list of test cases for the current test suite
-	 */
-	private static void listTestCases() {
-		
-		// TODO: possibly use Reflections for easier access to test cases
-		
-		// iterate through all test cases
-		for (Class<?> testcase : testsuite.getClass().getDeclaredClasses()) {
-			// check if the class object is in fact a test case
-			if (TestCase.class.isAssignableFrom(testcase)) {
-				// output the name of the test case
-				System.out.println(testcase.getSimpleName());
-				TestCase tc;
-				try {
-					tc = (TestCase) testcase.getConstructor(testsuite.getClass()).newInstance(testsuite);
-					// also output the description of the test case
-					System.out.println("\t" + tc.getDescription());
-				} catch (InstantiationException e) {
-					logger.error("Could not create a new instance of the test case", e);
-				} catch (IllegalAccessException e) {
-					logger.error("Could not create a new instance of the test case", e);
-				} catch (IllegalArgumentException e) {
-					logger.error("Could not create a new instance of the test case", e);
-				} catch (InvocationTargetException e) {
-					logger.error("Could not create a new instance of the test case", e);
-				} catch (NoSuchMethodException e) {
-					logger.error("Could not retrieve the constructor of the test case class", e);
-				} catch (SecurityException e) {
-					logger.error("Could not retrieve the constructor of the test case class", e);
-				}
-				System.out.println("");
-			} else {
-				logger.error("Class was not a test case");
-			}
-		}
-	}
-
-	/**
-	 * Display the mock IdP's metadata for the provided test suite.
-	 * 
-	 * @param testsuite
-	 *            is the test suite for which we should display the metadata
-	 */
-	private static void outputIdPMetadata(TestSuite testsuite) {
-		System.out.println(testsuite.getIdPMetadata());
 	}
 
 	/**
@@ -481,15 +412,6 @@ public class IdPTestRunner {
 			logger.error("The interaction link lookup could not find the specified element");
 		}
 		return null;
-	}
-
-	/**
-	 * Process the test results and output them as JSON
-	 * 
-	 * @param testresults is a list of test case results
-	 */
-	private static void outputTestResults(List<TestResult> testresults) {
-		System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(testresults));
 	}
 
 	/**

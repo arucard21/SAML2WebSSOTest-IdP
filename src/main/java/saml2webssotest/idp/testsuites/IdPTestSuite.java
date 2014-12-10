@@ -42,9 +42,8 @@ import org.opensaml.xml.security.x509.BasicX509Credential;
 import org.opensaml.xml.security.x509.X509Credential;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-
 import saml2webssotest.common.TestStatus;
+import saml2webssotest.common.TestSuite;
 import saml2webssotest.common.standardNames.MD;
 import saml2webssotest.common.standardNames.SAMLmisc;
 import saml2webssotest.idp.IdPConfiguration;
@@ -67,7 +66,7 @@ import saml2webssotest.idp.IdPTestRunner;
  * 
  * @author: Riaas Mokiem
  */
-public abstract class TestSuite {
+public abstract class IdPTestSuite implements TestSuite {
 	/**
 	 * Logger for this class
 	 */
@@ -87,15 +86,6 @@ public abstract class TestSuite {
 	 */
 	public abstract URL getMockSPURL();
 	
-	/**
-	 * Get the IdP metadata that should be used in the mock SP for this test suite.
-	 * 
-	 * This allows you to use specific IdP metadata for each test suite, which is defined in this method. 
-	 * 
-	 * @return: the metadata XML that should be used by the mock SP when running tests from this test suite
-	 */
-	public abstract String getIdPMetadata();
-
 	/**
 	 * Retrieve the X.509 Certificate that should be used by the mock SP.
 	 * 
@@ -297,40 +287,6 @@ public abstract class TestSuite {
 		return response;
 	}
 	
-	/**
-	 * The interface for all test cases. Defines the methods that are required for the test runner to correctly run
-	 * the test case.
-	 * 
-	 * In the test case you can define what should be checked in the SAML SP Metadata or in the SAML Request. You can also
-	 * provide LoginAttempt objects that specify the logins attempts that should be tested on the SP.  
-	 * 
-	 * @author RiaasM
-	 *
-	 */
-	public interface TestCase{
-
-		/**
-		 * Retrieve a description of the test case
-		 * 
-		 * @return a description of this test case
-		 */
-		String getDescription();
-		
-		/**
-		 * Retrieve the message that should be reported when the test passes.
-		 * 
-		 * @return the message for when the test passes
-		 */
-		String getSuccessMessage();
-		
-		/**
-		 * Retrieve the message that should be reported when the test fails.
-		 * 
-		 * @return the message for when the test fails
-		 */
-		String getFailedMessage();
-	}
-	
 	public interface ConfigTestCase extends TestCase {
 		
 		/**
@@ -341,16 +297,6 @@ public abstract class TestSuite {
 		TestStatus checkConfig(IdPConfiguration config);
 	}
 
-	public interface MetadataTestCase extends TestCase {
-		
-		/**
-		 * Check the provided metadata.  
-		 * 
-		 * @return the status of the test
-		 */
-		TestStatus checkMetadata(Document metadata);
-	}
-	
 	public interface ResponseTestCase extends TestCase {
 		
 		/**
