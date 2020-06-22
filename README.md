@@ -1,4 +1,6 @@
 # SAML2WebSSOTest-IdP
+**DEPRECATED: This has been moved to https://github.com/arucard21/SAML2WebSSOTest as a sub-project**
+
 Framework for automated testing of SAML 2.0 IdP entities, written in Java.
 
 # Description
